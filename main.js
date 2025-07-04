@@ -890,20 +890,99 @@ async function main() {
                     : e.deltaMode == 2
                       ? innerHeight
                       : 1;
-            let inv = invert4(viewMatrix);
             
-            // Mouse wheel - Zoom in/out
-            inv = translate4(
-                inv,
-                0,
-                0,
-                (-5 * (e.deltaY * scale)) / innerHeight,
-            );
-
-            viewMatrix = invert4(inv);
+            // Mouse wheel - Adjust orbit radius (zoom in/out)
+            const zoomSensitivity = 0.1;
+            const deltaRadius = (5 * (e.deltaY * scale)) / innerHeight * zoomSensitivity;
+            
+            // Update orbit radius with limits
+            orbitRadius = Math.max(0.5, Math.min(20, orbitRadius + deltaRadius));
+            
+            // Create new view matrix with updated radius
+            viewMatrix = createOrbitViewMatrix(orbitCenter, orbitRadius, orbitAzimuth, orbitElevation);
         },
         { passive: false },
     );
+
+    // Orbit camera system - prevents users from getting lost
+    const orbitCenter = [0, 0, 0]; // From scene.json center
+    let orbitRadius = 4; // Distance from center
+    let orbitAzimuth = 0; // Horizontal rotation around Y-axis
+    let orbitElevation = 0; // Vertical rotation (pitch)
+    
+    // Function to create lookAt matrix for orbit camera
+    function createLookAtMatrix(eye, target, up) {
+        const zAxis = [
+            eye[0] - target[0],
+            eye[1] - target[1], 
+            eye[2] - target[2]
+        ];
+        const zLen = Math.sqrt(zAxis[0] * zAxis[0] + zAxis[1] * zAxis[1] + zAxis[2] * zAxis[2]);
+        zAxis[0] /= zLen;
+        zAxis[1] /= zLen;
+        zAxis[2] /= zLen;
+        
+        const xAxis = [
+            up[1] * zAxis[2] - up[2] * zAxis[1],
+            up[2] * zAxis[0] - up[0] * zAxis[2],
+            up[0] * zAxis[1] - up[1] * zAxis[0]
+        ];
+        const xLen = Math.sqrt(xAxis[0] * xAxis[0] + xAxis[1] * xAxis[1] + xAxis[2] * xAxis[2]);
+        xAxis[0] /= xLen;
+        xAxis[1] /= xLen;
+        xAxis[2] /= xLen;
+        
+        const yAxis = [
+            zAxis[1] * xAxis[2] - zAxis[2] * xAxis[1],
+            zAxis[2] * xAxis[0] - zAxis[0] * xAxis[2],
+            zAxis[0] * xAxis[1] - zAxis[1] * xAxis[0]
+        ];
+        
+        return [
+            xAxis[0], yAxis[0], zAxis[0], 0,
+            xAxis[1], yAxis[1], zAxis[1], 0,
+            xAxis[2], yAxis[2], zAxis[2], 0,
+            -(xAxis[0] * eye[0] + xAxis[1] * eye[1] + xAxis[2] * eye[2]),
+            -(yAxis[0] * eye[0] + yAxis[1] * eye[1] + yAxis[2] * eye[2]),
+            -(zAxis[0] * eye[0] + zAxis[1] * eye[1] + zAxis[2] * eye[2]),
+            1
+        ];
+    }
+    
+    // Function to create view matrix from orbit parameters
+    function createOrbitViewMatrix(center, radius, azimuth, elevation) {
+        // Calculate camera position using spherical coordinates
+        const x = center[0] + radius * Math.cos(elevation) * Math.sin(azimuth);
+        const y = center[1] + radius * Math.sin(elevation);
+        const z = center[2] + radius * Math.cos(elevation) * Math.cos(azimuth);
+        
+        const eye = [x, y, z];
+        const target = center;
+        const up = [0, 1, 0];
+        
+        return createLookAtMatrix(eye, target, up);
+    }
+    
+    // Initialize orbit camera from current view matrix
+    function initializeOrbitFromViewMatrix() {
+        // Extract camera position from current view matrix
+        const inv = invert4(viewMatrix);
+        const camPos = [inv[12], inv[13], inv[14]];
+        
+        // Calculate orbit parameters from current position
+        const dx = camPos[0] - orbitCenter[0];
+        const dy = camPos[1] - orbitCenter[1];
+        const dz = camPos[2] - orbitCenter[2];
+        
+        orbitRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        orbitAzimuth = Math.atan2(dx, dz);
+        orbitElevation = Math.asin(dy / orbitRadius);
+        
+        console.log("Initialized orbit camera:", { radius: orbitRadius, azimuth: orbitAzimuth, elevation: orbitElevation });
+    }
+    
+    // Initialize orbit camera
+    initializeOrbitFromViewMatrix();
 
     let startX, startY, down;
     canvas.addEventListener("mousedown", (e) => {
@@ -927,32 +1006,32 @@ async function main() {
         if (down === false) return;
         
         if (down == 1) {
-            // Left click and drag - Pan (move camera position)
-            let inv = invert4(viewMatrix);
-            let dx = (10 * (e.clientX - startX)) / innerWidth;
-            let dy = (10 * (e.clientY - startY)) / innerHeight;
+            // Left click and drag - Orbit around splat asset
+            const sensitivity = 3.0;
+            const dx = (e.clientX - startX) / innerWidth * sensitivity;
+            const dy = (e.clientY - startY) / innerHeight * sensitivity;
             
-            inv = translate4(inv, -dx, -dy, 0);
-            viewMatrix = invert4(inv);
+            // Update orbit angles
+            orbitAzimuth += dx;
+            orbitElevation = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, orbitElevation - dy));
+            
+            // Create new view matrix from orbit parameters
+            viewMatrix = createOrbitViewMatrix(orbitCenter, orbitRadius, orbitAzimuth, orbitElevation);
 
             startX = e.clientX;
             startY = e.clientY;
         } else if (down == 2) {
-            // Right click and drag - Rotate (change camera view direction)
-            let inv = invert4(viewMatrix);
-            let dx = (3 * (e.clientX - startX)) / innerWidth; // Reduced sensitivity
-            let dy = (3 * (e.clientY - startY)) / innerHeight; // Reduced sensitivity
-            let d = 4;
-
-            // Only apply rotation if there's actual movement
-            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
-                console.log("Applying rotation: dx=", dx, "dy=", dy); // Debug
-                inv = translate4(inv, 0, 0, d);
-                inv = rotate4(inv, dx, 0, 1, 0);
-                inv = rotate4(inv, -dy, 1, 0, 0);
-                inv = translate4(inv, 0, 0, -d);
-                viewMatrix = invert4(inv);
-            }
+            // Right click and drag - Pan orbit center (for fine adjustment)
+            const sensitivity = 0.01;
+            const dx = (e.clientX - startX) * sensitivity;
+            const dy = (e.clientY - startY) * sensitivity;
+            
+            // Move orbit center slightly for fine positioning
+            orbitCenter[0] += dx;
+            orbitCenter[1] -= dy; // Inverted Y for natural movement
+            
+            // Update view matrix with new center
+            viewMatrix = createOrbitViewMatrix(orbitCenter, orbitRadius, orbitAzimuth, orbitElevation);
 
             startX = e.clientX;
             startY = e.clientY;
@@ -1005,30 +1084,22 @@ async function main() {
         (e) => {
             e.preventDefault();
             if (e.touches.length === 1 && down) {
-                let inv = invert4(viewMatrix);
-                let dx = (4 * (e.touches[0].clientX - startX)) / innerWidth;
-                let dy = (4 * (e.touches[0].clientY - startY)) / innerHeight;
-
-                let d = 4;
-                inv = translate4(inv, 0, 0, d);
-                // inv = translate4(inv,  -x, -y, -z);
-                // inv = translate4(inv,  x, y, z);
-                inv = rotate4(inv, dx, 0, 1, 0);
-                inv = rotate4(inv, -dy, 1, 0, 0);
-                inv = translate4(inv, 0, 0, -d);
-
-                viewMatrix = invert4(inv);
+                // Single touch - Orbit around splat asset (like left click)
+                const sensitivity = 4.0;
+                const dx = (e.touches[0].clientX - startX) / innerWidth * sensitivity;
+                const dy = (e.touches[0].clientY - startY) / innerHeight * sensitivity;
+                
+                // Update orbit angles
+                orbitAzimuth += dx;
+                orbitElevation = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, orbitElevation - dy));
+                
+                // Create new view matrix from orbit parameters
+                viewMatrix = createOrbitViewMatrix(orbitCenter, orbitRadius, orbitAzimuth, orbitElevation);
 
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
             } else if (e.touches.length === 2) {
-                // alert('beep')
-                const dtheta =
-                    Math.atan2(startY - altY, startX - altX) -
-                    Math.atan2(
-                        e.touches[0].clientY - e.touches[1].clientY,
-                        e.touches[0].clientX - e.touches[1].clientX,
-                    );
+                // Two-finger gesture - Pinch to zoom and pan
                 const dscale =
                     Math.hypot(startX - altX, startY - altY) /
                     Math.hypot(
@@ -1045,17 +1116,18 @@ async function main() {
                         e.touches[1].clientY -
                         (startY + altY)) /
                     2;
-                let inv = invert4(viewMatrix);
-                // inv = translate4(inv,  0, 0, d);
-                inv = rotate4(inv, dtheta, 0, 0, 1);
-
-                inv = translate4(inv, -dx / innerWidth, -dy / innerHeight, 0);
-
-                // let preY = inv[13];
-                inv = translate4(inv, 0, 0, 3 * (1 - dscale));
-                // inv[13] = preY;
-
-                viewMatrix = invert4(inv);
+                
+                // Pinch to zoom - adjust orbit radius
+                const zoomFactor = 2 - dscale; // Invert so pinch in = zoom in
+                orbitRadius = Math.max(0.5, Math.min(20, orbitRadius * zoomFactor));
+                
+                // Pan gesture - move orbit center
+                const panSensitivity = 0.01;
+                orbitCenter[0] += dx * panSensitivity;
+                orbitCenter[1] -= dy * panSensitivity; // Inverted Y for natural movement
+                
+                // Update view matrix
+                viewMatrix = createOrbitViewMatrix(orbitCenter, orbitRadius, orbitAzimuth, orbitElevation);
 
                 startX = e.touches[0].clientX;
                 altX = e.touches[1].clientX;
