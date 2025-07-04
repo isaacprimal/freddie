@@ -193,7 +193,7 @@
 				z-index: 1000;
 				color: white;
 				text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-				max-width: 300px;
+				max-width: 200px;
 			}
 			
 			.logo-container h3 {
@@ -240,7 +240,8 @@
 			}
 			
 			.logo {
-				max-width: 75px;
+				width: 75px !important;
+				max-width: 75px !important;
 				height: auto;
 				opacity: 0.9;
 			}
@@ -253,6 +254,23 @@
 			@media (max-width: 768px) {
 				.desktop-only {
 					display: none !important;
+				}
+				
+				.logo-container h3 {
+					font-size: 12px;
+				}
+				
+				.logo-container p {
+					font-size: 10px;
+				}
+				
+				.logo-container {
+					max-width: 150px;
+				}
+				
+				.logo {
+					width: 50px !important;
+					max-width: 50px !important;
 				}
 			}
 		</style>
