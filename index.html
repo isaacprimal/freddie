@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freddie 3D Viewer - Redirecting...</title>
+    <meta http-equiv="refresh" content="0; url=viewer.html">
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #000;
+            color: #fff;
+        }
+        .loader {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <h2>Loading Freddie 3D Viewer...</h2>
+        <p>If you're not redirected automatically, <a href="viewer.html" style="color: #4CAF50;">click here</a></p>
+    </div>
+    <script>
+        // Fallback redirect in case meta refresh doesn't work
+        setTimeout(() => {
+            window.location.href = 'viewer.html';
+        }, 1000);
+    </script>
+</body>
+</html> 
