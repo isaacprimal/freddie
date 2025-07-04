@@ -1084,13 +1084,14 @@ async function main() {
         (e) => {
             e.preventDefault();
             if (e.touches.length === 1 && down) {
-                // Single touch - Orbit around splat asset (like left click)
+                // Single touch - Orbit around splat asset
                 const sensitivity = 4.0;
                 const dx = (e.touches[0].clientX - startX) / innerWidth * sensitivity;
                 const dy = (e.touches[0].clientY - startY) / innerHeight * sensitivity;
                 
-                // Update orbit angles
-                orbitAzimuth += dx;
+                // Update orbit angles - invert horizontal for natural mobile feel
+                // Swipe left = orbit counterclockwise, swipe right = orbit clockwise
+                orbitAzimuth -= dx; // Inverted for natural mobile movement
                 orbitElevation = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, orbitElevation - dy));
                 
                 // Create new view matrix from orbit parameters
