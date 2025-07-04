@@ -1089,10 +1089,11 @@ async function main() {
                 const dx = (e.touches[0].clientX - startX) / innerWidth * sensitivity;
                 const dy = (e.touches[0].clientY - startY) / innerHeight * sensitivity;
                 
-                // Update orbit angles - invert horizontal for natural mobile feel
+                // Update orbit angles for natural mobile feel
                 // Swipe left = orbit counterclockwise, swipe right = orbit clockwise
-                orbitAzimuth -= dx; // Inverted for natural mobile movement
-                orbitElevation = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, orbitElevation - dy));
+                orbitAzimuth += dx; // Natural mobile movement: swipe direction = orbit direction
+                // Swipe up = look up, swipe down = look down
+                orbitElevation = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, orbitElevation + dy));
                 
                 // Create new view matrix from orbit parameters
                 viewMatrix = createOrbitViewMatrix(orbitCenter, orbitRadius, orbitAzimuth, orbitElevation);
