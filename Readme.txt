@@ -13,22 +13,21 @@ A WebGL-based viewer for animated 3D Gaussian Splat sequences, featuring real-ti
 
 ## 🚀 Live Demo
 
-**View the Ripley character sequence**: [https://isaacprimal.github.io/splat-file-hosting/viewer.html](https://isaacprimal.github.io/splat-file-hosting/viewer.html)
+**View the Freddie character sequence**: [https://isaacprimal.github.io/freddie/viewer.html](https://isaacprimal.github.io/freddie/viewer.html)
 
 ## 📁 Project Structure
 
 ```
-splat-file-hosting/
+freddie/
 ├── main.js                    # Core splat viewer engine
-├── index.html                 # Main viewer interface
 ├── viewer.html                # Production viewer page
 ├── splats/
 │   ├── scene.json            # Scene configuration
 │   ├── frame_00001.splat     # First frame
 │   ├── frame_00002.splat     # Second frame
 │   └── ...                   # Additional frames (299 total)
-├── clean_alpha.png           # TechniSync logo
-└── README.md                 # This documentation
+├── clean_alpha.png           # Primal Sphere logo
+└── Readme.txt                # This documentation
 ```
 
 ## ⚙️ Configuration
@@ -39,7 +38,7 @@ splat-file-hosting/
 {
   "ver": "1.0",
   "owner": "Primal Sphere",
-  "scene": "Ripley",
+  "scene": "Freddie",
   "framerate": 60,
   "numFrames": 299,
   "carouselOnLoad": false,
@@ -167,14 +166,14 @@ The `viewMatrix` is a 4x4 transformation matrix defining camera position and ori
 
 #### Common Camera Angles
 
-**Portrait View (current):**
-```json
-[0.866, 0, 0.5, 0, -0.25, 0.866, 0.433, 0, -0.433, -0.5, 0.75, 0, 0, 1, 4, 1]
-```
-
-**Side View:**
+**Side View (current):**
 ```json
 [0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 4, 1]
+```
+
+**Portrait View:**
+```json
+[0.866, 0, 0.5, 0, -0.25, 0.866, 0.433, 0, -0.433, -0.5, 0.75, 0, 0, 1, 4, 1]
 ```
 
 **Top-Down View:**
@@ -246,8 +245,8 @@ The `viewMatrix` is a 4x4 transformation matrix defining camera position and ori
 
 #### ✅ Optimized Camera Positioning
 - **Problem**: Default camera angle poor for character models
-- **Solution**: Implemented portrait-style viewing angle
-- **Result**: Perfect viewing angle for Ripley character
+- **Solution**: Implemented side-view viewing angle  
+- **Result**: Perfect viewing angle for Freddie character
 
 #### ✅ Enhanced Frame Management
 - **Problem**: Inefficient frame loading and caching
@@ -259,7 +258,7 @@ The `viewMatrix` is a 4x4 transformation matrix defining camera position and ori
 ### GitHub Pages Setup
 1. Push changes to `main` branch
 2. GitHub Pages automatically builds and deploys
-3. Access at: `https://[username].github.io/splat-file-hosting/viewer.html`
+3. Access at: `https://isaacprimal.github.io/freddie/viewer.html`
 
 ### Local Development
 ```bash

@@ -760,7 +760,7 @@ async function main() {
     const load_frame = () => {
         if (texCache[mframe - 1] == null) {
             texCache[mframe - 1] = 0;
-            let url = `https://isaacprimal.github.io/splat-file-hosting/splats/frame_${mframe.toString().padStart(5, '0')}.splat`;
+            let url = `https://isaacprimal.github.io/freddie/splats/frame_${mframe.toString().padStart(5, '0')}.splat`;
             fetch(url).then((response) => response.blob()).then((blob) => selectFileWithCache(blob, mframe));
             console.log("loading frame " + mframe + " from web");
         } else if (texCache[mframe - 1] != 0) {
