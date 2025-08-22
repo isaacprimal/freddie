@@ -650,8 +650,6 @@ async function main() {
     );
 
     const canvas = document.getElementById("canvas");
-    const fps = document.getElementById("fps");
-    const camid = document.getElementById("camid");
 
     let projectionMatrix;
 
@@ -851,10 +849,8 @@ async function main() {
                 JSON.stringify(
                     viewMatrix.map((k) => Math.round(k * 100) / 100),
                 );
-            camid.innerText = "";
         } else if (e.code === "KeyP") {
             carousel = true;
-            camid.innerText = "";
         }
         
         // Animation controls (following reference implementation)
@@ -1303,11 +1299,8 @@ async function main() {
             document.getElementById("progress").style.display = "none";
         }
         if (mfullyloaded)
-            fps.innerText = Math.round(avgFps) + " fps";
         else
-            fps.innerText = "Loading " + mframe + "/" + mNumFrames;
         if (isNaN(currentCameraIndex)) {
-            camid.innerText = "";
         }
         
         lastFrame = now;
@@ -1367,5 +1360,4 @@ async function main() {
 
 main().catch((err) => {
     document.getElementById("spinner").style.display = "none";
-    document.getElementById("message").innerText = err.toString();
 });
