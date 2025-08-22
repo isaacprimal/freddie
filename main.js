@@ -1298,8 +1298,6 @@ async function main() {
         } else {
             document.getElementById("progress").style.display = "none";
         }
-        if (mfullyloaded)
-        else
         if (isNaN(currentCameraIndex)) {
         }
         
